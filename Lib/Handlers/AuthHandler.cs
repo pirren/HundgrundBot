@@ -27,6 +27,7 @@ namespace HundgrundBot.Lib.Handlers
             try
             {
                 Log.Information("Attempting connection to Reddit...");
+
                 _agent = new(Configuration.Username,
                     Configuration.Password,
                     Configuration.ClientId,
@@ -34,6 +35,7 @@ namespace HundgrundBot.Lib.Handlers
                     Configuration.RedirectUri);
 
                 Log.Information("Bot successfully connected to Reddit.");
+
                 return Task.FromResult(true);
             }
             catch (Exception ex)
@@ -48,9 +50,12 @@ namespace HundgrundBot.Lib.Handlers
             try
             {
                 Log.Information("Retrieving access points...");
+
                 Reddit = new Reddit(_agent);
                 Subreddit = await Reddit.GetSubredditAsync(Configuration.Subreddit);
+
                 Log.Information("Access points retrieved! Agent: {usr}, Subreddit: {subr}", Configuration.Username, Subreddit.DisplayName);
+
                 return (Reddit, Subreddit);
             }
             catch
@@ -58,8 +63,5 @@ namespace HundgrundBot.Lib.Handlers
                 throw new UnauthorizedAccessException();
             }
         }
-
-        //public async Task<Comment[]> GetComments(int amount)
-        //    => await Subreddit.GetComments(amount).ToArrayAsync();
     }
 }
