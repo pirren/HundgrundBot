@@ -46,8 +46,9 @@ namespace HundgrundBot
 
         private async Task InitBot()
         {
-            Console.WriteLine("HundgrundBotService starting up.");
+            Log.Verbose("HundgrundBotService starting up.");
             FileHandler.EnsureExists();
+
             if (!await AuthHandler.Auth())
                 throw new UnauthorizedAccessException();
 
@@ -62,7 +63,7 @@ namespace HundgrundBot
         /// <returns></returns>
         public override async Task StopAsync(CancellationToken stoppingToken)
         {
-            Console.WriteLine("HundgrundBotService shutting down.");
+            Log.Verbose("HundgrundBotService shutting down.");
         }
     }
 }

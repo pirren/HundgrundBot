@@ -9,6 +9,5 @@ namespace HundgrundBot.Lib.Interfaces
         public Subreddit Subreddit { get; set; }
         Task<bool> Auth();
         Task<(Reddit, Subreddit)> GetAccessPoints();
-        //Task<Comment[]> GetComments(int amount);
     }
 }
