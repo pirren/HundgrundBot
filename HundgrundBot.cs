@@ -15,6 +15,7 @@ namespace HundgrundBot
         private TimeSpan latestPost;
 
         private const string message = "Hej! Hundgrund är en ö i södra Finland, mer info kan hittas på Wikipedia.\r\n\r\nhttps://sv.wikipedia.org/wiki/Hundgrund\r\n\r\nBeep boop, detta är en bot.";
+        private const string searchstring = "!hundgrund";
 
         public HundgrundBot(Reddit reddit, Subreddit subreddit, IBotConfiguration config, IFileHandler fileHandler)
         {
@@ -40,19 +41,16 @@ namespace HundgrundBot
             var latestpost = (DateTime.Now.TimeOfDay - latestPost).TotalMinutes;
             if (latestpost < 10)
             {
-                Log.Verbose("Latest Reply was {latest} minutes ago, now waiting until 10 minute mark.", latestPost);
+                Log.Verbose("Latest Reply was {latest} minutes ago, now waiting until 10 minute mark.", latestpost);
             }
-
-            foreach (var comment in await GetCommentsAsync(10))
+            else
             {
-                if (comment.Body.ToLower().Contains("!hundgrund"))
+                foreach (var comment in (await GetCommentsAsync(10)).Where(x => x.Body.ToLower().Contains(searchstring) && !repliedto.Contains(x.Id)))
                 {
-                    if (!repliedto.Contains(comment.Id))
-                    {
-                        Log.Verbose("Replying to Comment = {id}, Posted by AuthorName: {author}", comment.Id, comment.AuthorName);
-                        await ReplyAsync(comment);
-                        latestPost = DateTime.Now.TimeOfDay;
-                    }
+                    Log.Verbose("Replying to Comment = {id}, Posted by AuthorName: {author}", comment.Id, comment.AuthorName);
+                    await ReplyAsync(comment);
+                    latestPost = DateTime.Now.TimeOfDay;
+                    return;
                 }
             }
         }
