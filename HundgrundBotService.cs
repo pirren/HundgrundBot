@@ -5,7 +5,7 @@ using Serilog;
 
 namespace HundgrundBot
 {
-    public class BotService : BaseService
+    public class HundgrundBotService : BaseService
     {
         protected IFileHandler FileHandler { get; }
         protected IAuthHandler AuthHandler { get; }
@@ -13,11 +13,11 @@ namespace HundgrundBot
         private IRedditBot HundgrundBot;
         private int executionCount;
 
-        public BotService(IServiceScopeFactory scopeFactory, IBotConfiguration config, IFileHandler fileHandler, IAuthHandler accountHandler)
+        public HundgrundBotService(IServiceScopeFactory scopeFactory, IBotConfiguration config, IFileHandler fileHandler, IAuthHandler authHandler)
             : base(scopeFactory, config)
         {
             FileHandler = fileHandler;
-            AuthHandler = accountHandler;
+            AuthHandler = authHandler;
         }
 
         /// <summary>
@@ -27,13 +27,9 @@ namespace HundgrundBot
         /// <returns></returns>
         public override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            foreach(var comment in await HundgrundBot.GetComments())
-            {
-                Log.Verbose($"{comment.Body}, Posted by AuthorName: {comment.AuthorName}");
-            }
-
+            await HundgrundBot.WorkAsync();
             executionCount++;
-            Log.Verbose($"Bot Service workbatch count: #{executionCount}");
+            Log.Verbose("HundgrundBotService workbatch # {num} finished.", executionCount);
         }
 
         /// <summary>
@@ -44,14 +40,19 @@ namespace HundgrundBot
         /// <exception cref="UnauthorizedAccessException"></exception>
         public override async Task StartAsync(CancellationToken stoppingToken)
         {
+            await InitBot();
+            await base.StartAsync(stoppingToken);
+        }
+
+        private async Task InitBot()
+        {
+            Console.WriteLine("HundgrundBotService starting up.");
             FileHandler.EnsureExists();
             if (!await AuthHandler.Auth())
                 throw new UnauthorizedAccessException();
 
             var (reddit, subreddit) = await AuthHandler.GetAccessPoints();
-            HundgrundBot = new HundgrundBot(reddit, subreddit, Configuration);
-
-            await base.StartAsync(stoppingToken);
+            HundgrundBot = new HundgrundBot(reddit, subreddit, Configuration, FileHandler);
         }
 
         /// <summary>
@@ -61,7 +62,7 @@ namespace HundgrundBot
         /// <returns></returns>
         public override async Task StopAsync(CancellationToken stoppingToken)
         {
-            Console.WriteLine("BotService shutting down.");
+            Console.WriteLine("HundgrundBotService shutting down.");
         }
     }
 }

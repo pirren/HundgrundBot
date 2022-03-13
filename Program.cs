@@ -33,7 +33,7 @@ using IHost host = Host.CreateDefaultBuilder(args)
         services.AddScoped<IFileHandler, FileHandler>();
         services.AddScoped<IAuthHandler, AuthHandler>();
 
-        services.AddHostedService<BotService>();
+        services.AddHostedService<HundgrundBotService>();
     })
     .Build();
 

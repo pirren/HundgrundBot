@@ -9,6 +9,12 @@ namespace HundgrundBot.Lib.Handlers
         {
         }
 
+        public Task AddEntry(string id)
+        {
+            File.AppendAllLines(Configuration.RepliedToPath, new[] { id });
+            return Task.CompletedTask;
+        }
+
         public void EnsureExists()
         {
             if (!File.Exists(Configuration.RepliedToPath))

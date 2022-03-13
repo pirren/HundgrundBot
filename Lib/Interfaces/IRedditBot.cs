@@ -7,6 +7,8 @@ namespace HundgrundBot.Lib.Interfaces
     {
         public Reddit Reddit { get; set; }
         public Subreddit Subreddit { get; set; }
-        public Task<List<Comment>> GetComments(int amount = 25);
+        public Task<List<Comment>> GetCommentsAsync(int amount);
+        public Task ReplyAsync(Comment comment);
+        public Task WorkAsync();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using HundgrundBot.Lib.Interfaces;
 using RedditSharp;
 using RedditSharp.Things;
+using Serilog;
 
 namespace HundgrundBot
 {
@@ -9,18 +10,51 @@ namespace HundgrundBot
         public Reddit Reddit { get; set; }
         public Subreddit Subreddit { get; set; }
         public IBotConfiguration Config { get; }
+        public IFileHandler FileHandler { get; }
 
-        public HundgrundBot(Reddit reddit, Subreddit subreddit, IBotConfiguration config)
+        private TimeSpan latestPost;
+
+        private const string message = "Hej! Hundgrund är en ö i södra Finland, mer info kan hittas på Wikipedia.\r\n\r\nhttps://sv.wikipedia.org/wiki/Hundgrund\r\n\r\nBeep boop, detta är en bot.";
+
+        public HundgrundBot(Reddit reddit, Subreddit subreddit, IBotConfiguration config, IFileHandler fileHandler)
         {
             Reddit = reddit;
             Subreddit = subreddit;
             Config = config;
+            FileHandler = fileHandler;
         }
 
-        public async Task<List<Comment>> GetComments(int amount = 25)
+        public async Task<List<Comment>> GetCommentsAsync(int amount)
             => await Subreddit.GetComments(amount).ToListAsync();
 
-        //public async Task<Comment[]> GetComments(int amount)
-        //    => await Subreddit.GetComments(amount).ToArrayAsync();
+        public async Task ReplyAsync(Comment comment)
+        {
+            await comment.ReplyAsync(message);
+            await FileHandler.AddEntry(comment.Id);
+        }
+
+        public async Task WorkAsync()
+        {
+            var repliedto = FileHandler.ReadLines();
+
+            var latestpost = (DateTime.Now.TimeOfDay - latestPost).TotalMinutes;
+            if (latestpost < 10)
+            {
+                Log.Verbose("Latest Reply was {latest} minutes ago, now waiting until 10 minute mark.", latestPost);
+            }
+
+            foreach (var comment in await GetCommentsAsync(10))
+            {
+                if (comment.Body.ToLower().Contains("!hundgrund"))
+                {
+                    if (!repliedto.Contains(comment.Id))
+                    {
+                        Log.Verbose("Replying to Comment = {id}, Posted by AuthorName: {author}", comment.Id, comment.AuthorName);
+                        await ReplyAsync(comment);
+                        latestPost = DateTime.Now.TimeOfDay;
+                    }
+                }
+            }
+        }
     }
 }

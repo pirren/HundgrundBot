@@ -3,11 +3,6 @@ using HundgrundBot.Lib.Interfaces;
 using RedditSharp;
 using RedditSharp.Things;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HundgrundBot.Lib.Handlers
 {
